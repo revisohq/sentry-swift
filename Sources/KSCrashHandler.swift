@@ -29,6 +29,7 @@ internal class KSCrashHandler: CrashHandler {
 	private let keyEventTags = "event_tags"
 	private let keyEventExtra = "event_extra"
 	private let keyBreadcrumbsSerialized = "breadcrumbs_serialized"
+	private let keyReleaseVersion = "releaseVersion_serialized"
 
 
 	// MARK: - Initializers
@@ -44,6 +45,9 @@ internal class KSCrashHandler: CrashHandler {
 
 	// MARK: - EventProperties
 
+	internal var releaseVersion: String? {
+		didSet { updateUserInfo() }
+	}
 	internal var tags: EventTags = [:] {
 		didSet { updateUserInfo() }
 	}
@@ -130,6 +134,7 @@ internal class KSCrashHandler: CrashHandler {
 				let event = Event.build("") {
 					$0.level = .Fatal
 					$0.timestamp = timestamp
+					$0.releaseVersion = userInfo.releaseVersion
 					$0.tags = userInfo.tags ?? [:]
 					$0.extra = userInfo.extra ?? [:]
 					$0.user = userInfo.user
@@ -150,6 +155,7 @@ internal class KSCrashHandler: CrashHandler {
 		var userInfo = CrashDictionary()
 		userInfo[keyEventTags] = tags
 		userInfo[keyEventExtra] = extra
+		userInfo[keyReleaseVersion] = releaseVersion
 
 		if let user = user?.serialized {
 			userInfo[keyUser] = user
@@ -162,12 +168,13 @@ internal class KSCrashHandler: CrashHandler {
 		installation?.userInfo = userInfo
 	}
 
-	private func parseUserInfo(userInfo: CrashDictionary?) -> (tags: EventTags?, extra: EventExtra?, user: User?, breadcrumbsSerialized: BreadcrumbStore.SerializedType?) {
+	private func parseUserInfo(userInfo: CrashDictionary?) -> (tags: EventTags?, extra: EventExtra?, user: User?, breadcrumbsSerialized: BreadcrumbStore.SerializedType?, releaseVersion:String?) {
 		return (
 			userInfo?[keyEventTags] as? EventTags,
 			userInfo?[keyEventExtra] as? EventExtra,
 			User(dictionary: userInfo?[keyUser] as? [String: AnyObject]),
-			userInfo?[keyBreadcrumbsSerialized] as? BreadcrumbStore.SerializedType
+			userInfo?[keyBreadcrumbsSerialized] as? BreadcrumbStore.SerializedType,
+			userInfo?[keyReleaseVersion] as? String
 		)
 	}
 }

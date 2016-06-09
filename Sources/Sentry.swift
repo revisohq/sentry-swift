@@ -64,6 +64,9 @@ import Foundation
 
 	// MARK: EventProperties
 
+	public var releaseVersion: String? {
+		didSet { crashHandler?.releaseVersion = releaseVersion }
+	}
 	public var tags: EventTags = [:] {
 		didSet { crashHandler?.tags = tags }
 	}
@@ -96,7 +99,7 @@ import Foundation
 	- Parameter level: The severity of the message
 	*/
 	@objc public func captureMessage(message: String, level: SentrySeverity = .Info) {
-		let event = Event(message, level: level)
+		let event = Event(message, level: level, release: releaseVersion)
 		captureEvent(event)
 	}
 
